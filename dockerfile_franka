@@ -1,0 +1,105 @@
+# Base image
+FROM turtlebot3_base:latest
+ 
+ 
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    libpoco-dev \
+    libeigen3-dev \
+    libfmt-dev \
+&& rm -rf /var/lib/apt/lists/*
+ 
+# Copy all the dependencies into the container
+COPY ./src /src
+ 
+ 
+# Set working directory
+WORKDIR /src/libfranka
+ 
+# Build libfranka
+RUN mkdir -p build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake --build . --parallel && \
+    cmake --install . --prefix /usr/local
+ 
+RUN source /opt/ros/noetic/setup.bash
+ 
+# Step 1: Clean out old ROS sources and install curl/gpg
+RUN rm -f /etc/apt/sources.list.d/ros* && \
+    apt-get update || true && \
+    apt-get install -y curl gnupg2 lsb-release
+ 
+# Step 2: Add new ROS key and repo using keyring
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | \
+    gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros/ubuntu focal main" > \
+    /etc/apt/sources.list.d/ros-latest.list && \
+    apt-get update
+ 
+ 
+RUN apt-get update && apt-get install -y \
+    ros-noetic-combined-robot-hw \
+    ros-noetic-controller-manager \
+    ros-noetic-hardware-interface \
+    ros-noetic-transmission-interface \
+    ros-noetic-joint-limits-interface
+ 
+ 
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    bc \
+    curl \
+    debhelper \
+    dpkg-dev \
+    devscripts \
+    fakeroot \
+    libssl-dev \
+    libelf-dev \
+    bison \
+    flex \
+    cpio \
+    kmod \
+    rsync \
+    libncurses-dev \
+&& rm -rf /var/lib/apt/lists/*
+ 
+RUN apt-get update && apt-get install ros-noetic-boost-sml
+ 
+# Create keyring and import robotpkg key
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL http://robotpkg.openrobots.org/packages/debian/robotpkg.asc \
+    | tee /etc/apt/keyrings/robotpkg.asc > /dev/null
+ 
+# Add robotpkg repo to sources list
+RUN echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/robotpkg.asc] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg" \
+> /etc/apt/sources.list.d/robotpkg.list
+ 
+# Update and install pinocchio via robotpkg
+RUN apt-get update && apt-get install -y robotpkg-pinocchio
+ 
+# Export Pinocchio's install location so CMake can find it
+ENV CMAKE_PREFIX_PATH="/opt/openrobots:$CMAKE_PREFIX_PATH"
+ 
+# Create and populate catkin workspace
+WORKDIR /catkin_ws/src
+RUN cp -r /src/franka_ros .
+ 
+# Build franka_ros with catkin
+RUN apt-get update && apt-get install -y ros-noetic-catkin
+RUN source /opt/ros/noetic/setup.bash
+WORKDIR /catkin_ws
+#RUN bash -c "source /opt/ros/noetic/setup.bash && catkin_make -DCMAKE_BUILD_TYPE=Release -DFranka_DIR=/src/libfranka/build"
+RUN apt-get install -y python3-catkin-tools
+WORKDIR /catkin_ws
+RUN bash -c "source /opt/ros/noetic/setup.bash && catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release -DFranka_DIR=/src/libfranka/build && catkin build"
+ 
+ 
+# Source workspace on container startup
+RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc && \
+    echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
+ 
+# Set default working directory
+WORKDIR /catkin_ws
