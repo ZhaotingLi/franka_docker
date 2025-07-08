@@ -6,7 +6,7 @@ git clone --recursive https://github.com/frankaemika/libfranka
 
 git clone --recursive https://github.com/frankaemika/franka_ros  
 
-cd franka_ros/  
+#cd franka_ros/  
 
 git clone https://github.com/franzesegiovanni/franka_human_friendly_controllers.git 
 
@@ -17,7 +17,7 @@ git fetch --all --tags
 git checkout 0.13.3 
  
 
- 
+ [To do] check the version of libfranka on pandas (for fr3, version>=0.15)
  
 
 ### build franka ros dockerfile 
@@ -47,3 +47,12 @@ https://github.com/PickNikRobotics/boost_sml
 1999  git fetch --all --tags 
 
 2000  git checkout 0.13.3 
+
+
+
+
+#### INside the docker container
+
+export ROS_MASTER_URI=http://172.16.0.1:11311
+export ROS_IP=172.16.0.68
+export ROS_HOSTNAME=172.16.0.68

@@ -96,7 +96,10 @@ RUN apt-get install -y python3-catkin-tools
 WORKDIR /catkin_ws
 RUN bash -c "source /opt/ros/noetic/setup.bash && catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release -DFranka_DIR=/src/libfranka/build && catkin build"
  
- 
+
+RUN pip install --no-cache-dir pynput numpy-quaternion
+
+COPY /franka_python /catkin_ws/python_franka
 # Source workspace on container startup
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc && \
     echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
