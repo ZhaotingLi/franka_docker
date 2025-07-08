@@ -1,4 +1,6 @@
-0.git clone some files: 
+### 0.git clone some files: 
+
+cd src/
 
 git clone --recursive https://github.com/frankaemika/libfranka 
 
@@ -7,6 +9,28 @@ git clone --recursive https://github.com/frankaemika/franka_ros
 cd franka_ros/  
 
 git clone https://github.com/franzesegiovanni/franka_human_friendly_controllers.git 
+
+cd src/libfranka/ 
+
+git fetch --all --tags 
+
+git checkout 0.13.3 
+ 
+
+ 
+ 
+
+### build franka ros dockerfile 
+
+sudo docker build -t franka_robot_docker:v1 -f dockerfile_franka . 
+
+
+### Run franka-ros docker container
+sudo docker run -it --net=host --env="NVIDIA_DRIVER_CAPABILITIES=all" --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --privileged -v /dev:/dev franka_robot_docker:v1 bash 
+
+Inside the container, you can run some examples listed here: https://frankarobotics.github.io/docs/franka_ros.html#franka-gazebo  
+
+####Possible issues
 
 0.1 write the dockerfile, copy the above documents and  
 
@@ -23,15 +47,3 @@ https://github.com/PickNikRobotics/boost_sml
 1999  git fetch --all --tags 
 
 2000  git checkout 0.13.3 
-
- 
-
- 
-
-[franka ros dockerfile] 
-
-sudo docker build -t franka_robot_docker:v1 -f dockerfile_franka . 
-
-sudo docker run -it --net=host --env="NVIDIA_DRIVER_CAPABILITIES=all" --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --privileged -v /dev:/dev franka_robot_docker:v1 bash 
-
-Inside the container, you can run some examples listed here: https://frankarobotics.github.io/docs/franka_ros.html#franka-gazebo  
