@@ -10,7 +10,16 @@ RUN apt-get update && apt-get install -y \
     libpoco-dev \
     libeigen3-dev \
     libfmt-dev \
-&& rm -rf /var/lib/apt/lists/*
+    lsb-release \
+    curl \
+ && mkdir -p /etc/apt/keyrings \
+ && curl -fsSL http://robotpkg.openrobots.org/packages/debian/robotpkg.asc \
+    | tee /etc/apt/keyrings/robotpkg.asc \
+ && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/robotpkg.asc] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg" \
+    > /etc/apt/sources.list.d/robotpkg.list \
+ && apt-get update \
+ && apt-get install -y robotpkg-pinocchio \
+ && rm -rf /var/lib/apt/lists/*
  
 # Copy all the dependencies into the container
 COPY ./src /src
@@ -21,7 +30,8 @@ WORKDIR /src/libfranka
  
 # Build libfranka
 RUN mkdir -p build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH=/opt/openrobots/lib/cmake .. && \
     cmake --build . --parallel && \
     cmake --install . --prefix /usr/local
  
