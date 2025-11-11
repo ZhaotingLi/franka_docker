@@ -22,6 +22,7 @@ git checkout 0.13.3
 
 ### build franka ros dockerfile 
 
+cd /home/zhaoting/ros_docker_packages/franka_docker
 sudo docker build -t franka_robot_docker:v1 -f dockerfile_franka . 
 
 
@@ -60,3 +61,17 @@ export ROS_HOSTNAME=172.16.0.68
 ### One example of controlling the robot 
 
 python3 python_franka/main_manually.py  
+
+
+### space mouse
+ls -l /dev/input/by-id/
+sudo lsof /dev/input/event23
+spacenavd -v -d &
+roslaunch spacenav_node classic.launch
+
+### Realsense
+roslaunch realsense2_camera rs_camera.launch
+roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=317222075615 serial_no_camera2:=336222073305
+ 
+sudo rm /var/log/uvcdynctrl-udev.log  ### remove cache
+ 
