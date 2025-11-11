@@ -42,14 +42,14 @@ class Test(Panda):
         curr_position = self.curr_pos
         print(f"Current position: {curr_position}")
 
-        self.home()
+        #self.home()
 
         curr_position = self.curr_pos
         print(f"Current position: {curr_position} with orietation {self.curr_ori}")
 
         goal_orie = np.quaternion(0, 1, 0, 0)
         goal_pos = curr_position
-        goal_pos[0] = goal_pos[0] + 0.05
+        goal_pos[0] = goal_pos[0] - 0.05
         print(goal_pos)
         goal = array_quat_2_pose(goal_pos, goal_orie)
         goal.header.seq=1
@@ -57,7 +57,7 @@ class Test(Panda):
 
         self.go_to_pose(goal)
 
-        goal_pos[1] = goal_pos[1] + 0.05
+        goal_pos[1] = goal_pos[1] - 0.05
         print(goal_pos)
         goal = array_quat_2_pose(goal_pos, goal_orie)
         goal.header.seq=1
@@ -65,7 +65,7 @@ class Test(Panda):
 
         self.go_to_pose(goal)
 
-        goal_pos[2] = goal_pos[2] + 0.05
+        goal_pos[2] = goal_pos[2] - 0.05
         print(goal_pos)
         goal = array_quat_2_pose(goal_pos, goal_orie)
         goal.header.seq=1

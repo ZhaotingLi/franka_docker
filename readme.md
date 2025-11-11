@@ -56,3 +56,7 @@ https://github.com/PickNikRobotics/boost_sml
 export ROS_MASTER_URI=http://172.16.0.1:11311
 export ROS_IP=172.16.0.68
 export ROS_HOSTNAME=172.16.0.68
+
+### One example of controlling the robot 
+
+python3 python_franka/main_manually.py  
