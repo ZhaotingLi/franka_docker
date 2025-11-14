@@ -122,7 +122,7 @@ class PandaSpacenav:
            # ee_delta_position[2] = (self.position_goal_z - ee_position[2]) / self.scale
 
         ee_goal_position = ee_position + ee_delta_position
-        ee_goal_position = self._apply_workspace_limits(ee_goal_position)
+        #ee_goal_position = self._apply_workspace_limits(ee_goal_position)
 
         # === Orientation control ===
         if self.control_orientation:
@@ -136,7 +136,7 @@ class PandaSpacenav:
             # Keep fixed downward orientation
             ee_goal_quat = self.orientation_goal_quat
 	
-	print("ee_goal_position: ", ee_goal_position)
+	#print("ee_goal_position: ", ee_goal_position)
         # === Publish equilibrium pose ===
         goal = array_quat_2_pose(ee_goal_position, ee_goal_quat)
         goal.header.seq = 1
