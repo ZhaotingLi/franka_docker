@@ -164,6 +164,7 @@ class Teleoperation(Panda):
             # NEW: keyboard-based rotation around WORLD z-axis
             if self.rot_command != 0:
                 yaw = self.rot_command * self.rot_step  # + or - about world z
+                print("yaw: ", yaw)
                 qz_array = get_quaternion_from_euler(0.0, 0.0, yaw)
                 qz_delta = np.quaternion(qz_array[0], qz_array[1], qz_array[2], qz_array[3])
                 quat_goal = qz_delta * quat_goal        # left-multiply = world-frame z-rot
