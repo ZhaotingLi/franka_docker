@@ -101,7 +101,8 @@ sudo docker builder prune # remove unused cache
 sudo docker ps
 sudo docker cp d2eff0e71dc6:app/saved_data/kuka-push-BD-COACH-1027-1505  /home/zhaoting/Documents 
 
-sudo docker cp dc88923f388d:app/outputs/ ~/outputs_franka/
+sudo docker cp e7cd3f5b8c9e:app/outputs/ ~/outputs_franka/outputs/
+sudo chmod -R a+w ~/outputs_franka/
 
 sudo docker cp f2b81da43982:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/trajectory_buffer_self_play0.hdf5 ~/outputs/
 
