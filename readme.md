@@ -1,6 +1,6 @@
 ### 0.git clone some files: 
 
-cd src/
+cd franka_docker/src/
 
 git clone --recursive https://github.com/frankaemika/libfranka 
 
@@ -59,7 +59,7 @@ export ROS_MASTER_URI=http://172.16.0.1:11311
 export ROS_IP=172.16.0.68
 export ROS_HOSTNAME=172.16.0.68
 
-conda run -n conda-env-CLIC --no-capture-output python main-kuka-cleaned.py --config-name train_CLIC_Diffusion_image_Ta8 hydra.run.dir='outputs/${experiment_id}'
+conda run -n conda-env-CLIC --no-capture-output python main-kuka-cleaned.py --config-name train_CLIC_Diffusion_image_Ta8 hydra.run.dir='outputs/${experiment_id}' GENERAL.Ta_executed=4
 
 conda run -n conda-env-CLIC --no-capture-output python env/realsense_Image_receiver.py
 
@@ -101,12 +101,15 @@ sudo docker builder prune # remove unused cache
 sudo docker ps
 sudo docker cp d2eff0e71dc6:app/saved_data/kuka-push-BD-COACH-1027-1505  /home/zhaoting/Documents 
 
-sudo docker cp e7cd3f5b8c9e:app/outputs/ ~/outputs_franka/outputs/
+sudo docker cp d5aa1c6eb768:app/outputs/ ~/outputs_franka/outputs/
+sudo chmod -R a+w ~/outputs_franka/
+
+sudo docker cp a1e084003c2b:app/outputs_docker/Camera\ 2_screenshot_27.11.2025.png ~/outputs_franka/outputs/
 sudo chmod -R a+w ~/outputs_franka/
 
 sudo docker cp f2b81da43982:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/trajectory_buffer_self_play0.hdf5 ~/outputs/
 
-sudo docker cp 004e3c9f0169:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/saved_data/ ~/outputs/
+sudo docker cp e3df53de2978:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/saved_data/ ~/outputs/
 sudo docker cp 5f4108b5428d:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/results/ /home/zhaoting/Documents/results
 
 sudo chmod a+w <file_name>  # change the file permissions
