@@ -1,117 +1,123 @@
-### 0.git clone some files: 
+# franka_docker
 
-cd franka_docker/src/
+`franka_docker` is a Dockerized ROS Noetic workspace for building and running Franka software with the packages already included in this repository.
 
-git clone --recursive https://github.com/frankaemika/libfranka 
+It is also intended to serve as a base image for a CDP container, where ROS-Python commands are sent to a Franka ROS controller running in this environment.
 
-git clone --recursive https://github.com/frankaemika/franka_ros  
+It is meant to help you:
 
-#cd franka_ros/  
+- build `libfranka` and `franka_ros` inside a container
+- launch a controller that can connect to a real Franka robot through FCI
+- run the included Python helper scripts for simple robot commands
 
-git clone https://github.com/franzesegiovanni/franka_human_friendly_controllers.git 
+## What Is In This Repo
 
-cd src/libfranka/ 
+- `dockerfile_franka`: Docker image definition
+- `src/libfranka`: Franka C++ library source
+- `src/franka_ros`: ROS integration for Franka
+- `src/franka_human_friendly_controllers`: custom controllers used in this workspace
+- `franka_python`: Python scripts that publish commands to the controller
 
-git fetch --all --tags 
+The Docker build copies the checked-in sources directly from this repository, so you do not need to clone those dependencies again before building.
 
-git checkout 0.13.3 
- 
+## Prerequisites
 
- [To do] check the version of libfranka on pandas (for fr3, version>=0.15)
- 
+Before using this repo, make sure you have:
 
-### build franka ros dockerfile 
+- Docker installed on the host
+- a host machine that can reach the robot over the network
+- Franka FCI enabled on the robot
+- X11 forwarding available if you want to use `rviz` or `rqt_reconfigure`
+- the base image `turtlebot3_base:latest` available locally, because [`dockerfile_franka`](/home/zhaoting/ros_docker_packages/franka_docker/dockerfile_franka) starts from that image
 
+If your setup does not have `turtlebot3_base:latest`, update [`dockerfile_franka`](/home/zhaoting/ros_docker_packages/franka_docker/dockerfile_franka) to use a suitable ROS Noetic base image or build that base image first.
+
+## What The Docker Image Builds
+
+The image defined in [`dockerfile_franka`](/home/zhaoting/ros_docker_packages/franka_docker/dockerfile_franka) does the following:
+
+- builds `libfranka` from `src/libfranka`
+- creates `/catkin_ws` and builds `franka_ros`
+- includes `franka_human_friendly_controllers` in the workspace
+- installs useful runtime packages such as `spacenav` and `realsense2_camera`
+- copies the Python helper scripts into `/catkin_ws/python_franka`
+
+## Build The Docker Image
+
+From the repository root:
+
+```bash
 cd /home/zhaoting/ros_docker_packages/franka_docker
-sudo docker build -t franka_robot_docker:v2 -f dockerfile_franka . 
+sudo docker build -t franka_robot_docker:v2 -f dockerfile_franka .
+```
 
+If the build fails because of Franka package compatibility, check the versions currently present in `src/libfranka` and `src/franka_ros` and compare them with the official Franka compatibility documentation.
 
-### Run franka-ros docker container
-sudo docker run -it --net=host --env="NVIDIA_DRIVER_CAPABILITIES=all" --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --privileged -v /dev:/dev franka_robot_docker:v2 bash 
+## Run The Container
 
-Inside the container, you can run some examples listed here: https://frankarobotics.github.io/docs/franka_ros.html#franka-gazebo  
+If you want GUI tools from the container to open on the host, allow local Docker access to X11 first:
 
-####Possible issues
-
-0.1 write the dockerfile, copy the above documents and  
-
-1. [Error, boost_sml] 42.56 Errors << franka_gazebo:cmake /catkin_ws/logs/franka_gazebo/build.cmake.000.log 42.56 CMake Error at /opt/ros/noetic/share/catkin/cmake/catkinConfig.cmake:83 (find_package): 42.56 Could not find a package configuration file provided by "boost_sml" with 
-
-1.1[solution] fixed by installing the missing dependences: sudo apt-get install ros-${ROS_DISTRO}-boost-sml 
-
-https://github.com/PickNikRobotics/boost_sml 
-
-2.go the libfranka directory, and use an older version of it 
-
-1998  cd src/libfranka/ 
-
-1999  git fetch --all --tags 
-
-2000  git checkout 0.13.3 
-
-
-
+```bash
 xhost +local:docker
-#### INside the docker container
+```
 
+Then start the container:
 
-export ROS_MASTER_URI=http://172.16.0.1:11311
-export ROS_IP=172.16.0.68
-export ROS_HOSTNAME=172.16.0.68
+```bash
+sudo docker run -it \
+  --net=host \
+  --env="NVIDIA_DRIVER_CAPABILITIES=all" \
+  --env="DISPLAY" \
+  --env="QT_X11_NO_MITSHM=1" \
+  --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+  --privileged \
+  -v /dev:/dev \
+  franka_robot_docker:v2 bash
+```
 
-conda run -n conda-env-CLIC --no-capture-output python main-kuka-cleaned.py --config-name train_CLIC_Diffusion_image_Ta8 hydra.run.dir='outputs/${experiment_id}' GENERAL.Ta_executed=4
+The container starts in `/catkin_ws`, and the ROS environment is added to `~/.bashrc`.
 
-conda run -n conda-env-CLIC --no-capture-output python env/realsense_Image_receiver.py
+## Start A Franka Controller
 
-### One example of controlling the robot 
+Inside the container, launch the custom Cartesian impedance controller and point it to the robot IP:
 
-python3 python_franka/main_manually.py  
+For Panda:
 
+```bash
+roslaunch franka_human_friendly_controllers cartesian_variable_impedance_controller.launch \
+  robot_ip:=<ROBOT_IP> \
+  load_gripper:=true \
+  arm_id:=panda
+```
 
-### space mouse
-ls -l /dev/input/by-id/
-sudo lsof /dev/input/event23
-spacenavd -v -d &
-roslaunch spacenav_node classic.launch
+For FR3:
 
-### Realsense
-roslaunch realsense2_camera rs_camera.launch  # use this command this find the serial number of each camera
-roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=045322075902 serial_no_camera2:=825312073923
- 
-sudo rm /var/log/uvcdynctrl-udev.log  ### remove cache
- 
+```bash
+roslaunch franka_human_friendly_controllers cartesian_variable_impedance_controller.launch \
+  robot_ip:=<ROBOT_IP> \
+  load_gripper:=true \
+  arm_id:=fr3
+```
 
+This launch file starts:
 
-#### Docker build BD-COACH 
-cd /home/zhaoting/TUD_Projects/BD-COACH/Files
-sudo docker build -t bd-coach-image-franka -f dockerfile_CLIC_franka .
+- the Franka control node
+- the gripper node when `load_gripper:=true`
+- the custom impedance controller
+- `rviz` and `rqt_reconfigure`
 
-### Docker run BD-COACH with GPU
-sudo docker run -it --gpus=all --net=host --env="NVIDIA_DRIVER_CAPABILITIES=all" --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" bd-coach-image-franka bash 
+## Run A Simple Python Control Example
 
-### Delete non-used docker images
-sudo docker container prune 
-sudo docker image prune
-sudo docker images -a | grep none | awk '{ print $3; }' | sudo xargs docker rmi –force
+Once the controller is running, open another shell in the same container and run:
 
-sudo docker system df    # check the docker memory usage
-sudo docker builder prune # remove unused cache
+```bash
+python3 python_franka/main_manually.py
+```
 
- ### Copy files from docker into local
-sudo docker ps
-sudo docker cp d2eff0e71dc6:app/saved_data/kuka-push-BD-COACH-1027-1505  /home/zhaoting/Documents 
+This script publishes pose commands to `/equilibrium_pose`, so it only works after the controller above is already active.
 
-sudo docker cp d5aa1c6eb768:app/outputs/ ~/outputs_franka/outputs/
-sudo chmod -R a+w ~/outputs_franka/
+## Notes
 
-sudo docker cp a1e084003c2b:app/outputs_docker/Camera\ 2_screenshot_27.11.2025.png ~/outputs_franka/outputs/
-sudo chmod -R a+w ~/outputs_franka/
-
-sudo docker cp f2b81da43982:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/trajectory_buffer_self_play0.hdf5 ~/outputs/
-
-sudo docker cp e3df53de2978:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/saved_data/ ~/outputs/
-sudo docker cp 5f4108b5428d:/catkin_ros1_ws/src/relaxed_ik_ros1/relaxed_ik_core/results/ /home/zhaoting/Documents/results
-
-sudo chmod a+w <file_name>  # change the file permissions
-sudo chmod -R a+w saved_data/
-sudo chmod -R a+w ~/outputs_franka/
+- The Python helper scripts assume the ROS topics exposed by `franka_human_friendly_controllers`.
+- If you want to use a calibrated model, see the launch options described in [`src/franka_human_friendly_controllers/README.md`](/home/zhaoting/ros_docker_packages/franka_docker/src/franka_human_friendly_controllers/README.md).
+- Older ad hoc experiment commands that were previously mixed into this README are now collected in [`docs/franka_experiment_notes.md`](/home/zhaoting/ros_docker_packages/franka_docker/docs/franka_experiment_notes.md).

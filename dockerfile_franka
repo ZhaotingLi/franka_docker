@@ -96,6 +96,7 @@ ENV CMAKE_PREFIX_PATH="/opt/openrobots:$CMAKE_PREFIX_PATH"
 # Create and populate catkin workspace
 WORKDIR /catkin_ws/src
 RUN cp -r /src/franka_ros .
+RUN cp -r /src/franka_human_friendly_controllers .
  
 # Build franka_ros with catkin
 RUN apt-get update && apt-get install -y ros-noetic-catkin
