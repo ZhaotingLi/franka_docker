@@ -4,11 +4,22 @@ This file keeps personal experiment notes and one-off commands that are not part
 
 ## ROS Networking Inside The Container
 
+same ip and ROS_MASTER_URI for Franka fr3 (172.16.0.4) and 
 ```bash
 export ROS_MASTER_URI=http://172.16.0.1:11311
 export ROS_IP=172.16.0.68
 export ROS_HOSTNAME=172.16.0.68
 ```
+
+
+## Test franka gripper
+
+```bash
+rostopic pub -1 /franka_gripper/homing/goal franka_gripper/HomingActionGoal '{header: auto, goal_id: {stamp: now, id: ""}, goal: {}}'
+
+rostopic pub -1 /franka_gripper/grasp/goal franka_gripper/GraspActionGoal '{header: auto, goal_id: {stamp: now, id: ""}, goal: {width: 0.0, epsilon: {inner: 0.005, outer: 0.005}, speed: 0.05, force: 20.0}}'
+```
+
 
 ## Example External Commands
 
@@ -26,8 +37,10 @@ python3 python_franka/main_manually.py
 ## SpaceMouse
 
 ```bash
+## used to remove the current process that use the space mouse
 ls -l /dev/input/by-id/
 sudo lsof /dev/input/event23
+
 spacenavd -v -d &
 roslaunch spacenav_node classic.launch
 ```
