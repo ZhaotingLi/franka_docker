@@ -4,7 +4,14 @@ This file keeps personal experiment notes and one-off commands that are not part
 
 ## ROS Networking Inside The Container
 
-same ip and ROS_MASTER_URI for Franka fr3 (172.16.0.4) and 
+Connect the Ethernet cable to the Franka FR3 network first. The IP address assigned
+to that Ethernet interface decides the values for `ROS_IP` and `ROS_HOSTNAME`.
+
+To set the Ethernet IP on Ubuntu: open Settings -> Network, click `+` for the
+wired connection, go to IPv4, choose Manual, then set the address to
+`172.16.0.68` and Netmask to '255.255.255.0'.
+
+
 ```bash
 export ROS_MASTER_URI=http://172.16.0.1:11311
 export ROS_IP=172.16.0.68
@@ -53,13 +60,23 @@ roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=045322
 sudo rm /var/log/uvcdynctrl-udev.log
 ```
 
-## BD-COACH Docker Commands
+## CDP Docker Commands
 
 ```bash
-cd /home/zhaoting/TUD_Projects/BD-COACH/Files
-sudo docker build -t bd-coach-image-franka -f dockerfile_CLIC_franka .
+# Set this to the local checkout that contains dockerfile_CLIC_franka and src/.
+CDP_PROJECT_DIR=/path/to/CDP/project
+CDP_IMAGE_NAME=bd-coach-image-franka
 
-sudo docker run -it --gpus=all --net=host --env="NVIDIA_DRIVER_CAPABILITIES=all" --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" bd-coach-image-franka bash
+# build the docker (not necessary if you pull it from the dockerhub)
+cd "$CDP_PROJECT_DIR"
+sudo docker build -t "$CDP_IMAGE_NAME" -f dockerfile_CLIC_franka .
+
+# run the docker image
+sudo docker run -it --gpus=all --net=host --env="NVIDIA_DRIVER_CAPABILITIES=all" --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" "$CDP_IMAGE_NAME" bash
+
+
+# run with the local src/ directory mounted into /app/
+sudo docker run -it   --gpus=all   --net=host   --env="NVIDIA_DRIVER_CAPABILITIES=all"   --env="DISPLAY"   --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --volume="$CDP_PROJECT_DIR/src:/app/:rw"   "$CDP_IMAGE_NAME" bash
 ```
 
 ## Docker Cleanup
