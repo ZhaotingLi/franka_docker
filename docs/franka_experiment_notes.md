@@ -31,8 +31,26 @@ rostopic pub -1 /franka_gripper/grasp/goal franka_gripper/GraspActionGoal '{head
 ## Example External Commands
 
 ```bash
+# fix as the new ros master id: pandahandler
+CDP_PROJECT_DIR=~/TUD_Projects/BD-COACH/Files/
+CDP_IMAGE_NAME=bd-coach-image-franka
+sudo docker run -it   --gpus=all   --net=host --add-host pandahandler:172.16.0.1  --env="NVIDIA_DRIVER_CAPABILITIES=all"   --env="DISPLAY"   --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --volume="$CDP_PROJECT_DIR/src:/app/:rw"   "$CDP_IMAGE_NAME" bash
+
+
+
 conda run -n conda-env-CLIC --no-capture-output python main-kuka-cleaned.py --config-name train_CLIC_Diffusion_image_Ta8 hydra.run.dir='outputs/${experiment_id}' GENERAL.Ta_executed=4
 conda run -n conda-env-CLIC --no-capture-output python env/realsense_Image_receiver.py
+
+
+conda run -n conda-env-CLIC --no-capture-output python main-real-robot.py \
+    --config-path='config_real' \
+    --config-name=train_Set_Supervised_Diffusion_image_Ta8 \
+    AGENT.offline_data_collection=true
+
+
+conda run -n conda-env-CLIC --no-capture-output python main-real-robot.py \
+    --config-path='config_real' \
+    --config-name=train_Set_Supervised_Diffusion_image_Ta8_offline_picktomato_evaluation
 ```
 
 ## One Example Of Controlling The Robot
@@ -56,7 +74,8 @@ roslaunch spacenav_node classic.launch
 
 ```bash
 roslaunch realsense2_camera rs_camera.launch
-roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=045322075902 serial_no_camera2:=825312073923
+# roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=045322075902 serial_no_camera2:=825312073923
+roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=336222073305 serial_no_camera2:=317222075615
 sudo rm /var/log/uvcdynctrl-udev.log
 ```
 
@@ -97,6 +116,9 @@ sudo docker cp d2eff0e71dc6:app/saved_data/kuka-push-BD-COACH-1027-1505 /home/zh
 
 sudo docker cp d5aa1c6eb768:app/outputs/ ~/outputs_franka/outputs/
 sudo chmod -R a+w ~/outputs_franka/
+
+
+sudo chmod -R a+w outputs/
 
 sudo docker cp a1e084003c2b:app/outputs_docker/Camera\ 2_screenshot_27.11.2025.png ~/outputs_franka/outputs/
 sudo chmod -R a+w ~/outputs_franka/

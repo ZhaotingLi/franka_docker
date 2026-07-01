@@ -76,7 +76,22 @@ xhost +local:docker
 
 Then, in each terminal, run the Docker command to open one container. See
 [CDP Docker Commands](franka_experiment_notes.md#cdp-docker-commands) for the
-current Docker build and run commands. After each container starts, run the ROS
+current Docker build and run commands:
+
+```bash
+sudo docker run -it \
+  --net=host \
+  --env="NVIDIA_DRIVER_CAPABILITIES=all" \
+  --env="DISPLAY" \
+  --env="QT_X11_NO_MITSHM=1" \
+  --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+  --privileged \
+  -v /dev:/dev \
+  franka_robot_docker:v2 bash
+```
+
+
+ After each container starts, run the ROS
 networking exports inside that container:
 
 ```bash
@@ -120,7 +135,7 @@ roslaunch realsense2_camera rs_camera.launch
 Then launch both cameras with their serial numbers:
 
 ```bash
-roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=045322075902 serial_no_camera2:=825312073923
+roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=336222073305 serial_no_camera2:=825312073923
 ```
 
 Check that the images can be received (should use a CDP env container):
