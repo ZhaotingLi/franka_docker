@@ -64,6 +64,41 @@ export ROS_HOSTNAME=172.16.0.68
 
 ## Step 3: Start Docker Containers On Your PC
 
+### Quick Start: One Script
+
+[`scripts/launch_exp_terminals.sh`](../scripts/launch_exp_terminals.sh) does all of
+Step 3 at once: it runs `xhost +local:docker`, then opens one Terminator window
+where every pane is already inside a container with the ROS networking variables
+set. The `PANES` table at the top of the script sets each pane's container and
+command:
+
+| Pane | Container | Command | Starts |
+| --- | --- | --- | --- |
+| spacemouse | robot | `spacenavd` + `spacenav_node` (Step 3-2) | automatically |
+| cameras | robot | `rs_multiple_devices.launch` (Step 3-3) | automatically |
+| spacemouse test | robot | `rostopic echo /spacenav/joy` | press Up, Enter |
+| spare | robot | none | |
+| camera images | cdp | `realsense_Image_receiver.py` (Step 3-3) | press Up, Enter |
+| CDP main | cdp | `main-kuka-cleaned.py` (Step 4) | press Up, Enter |
+
+Ctrl+C stops an automatic command and leaves you at the container prompt. Edit
+`PANES` to add or remove panes, change commands, or switch between `auto` and `up`.
+
+```bash
+scripts/launch_exp_terminals.sh
+
+# change images or paths with environment variables, e.g.
+CDP_PROJECT_DIR=/path/to/CDP/project scripts/launch_exp_terminals.sh
+# print the docker commands without starting containers
+DRY_RUN=1 scripts/launch_exp_terminals.sh
+```
+
+If your user is not in the `docker` group, every pane asks for the sudo password
+once. To skip that, run `sudo usermod -aG docker $USER` and log in again (this
+gives your user root-equivalent access through Docker).
+
+### Manual Steps
+
 Open four terminals first. A multi-terminal layout is highly recommended; for
 example, see the
 [Terminator setup notes](https://innovativeinnovation.github.io/ubuntu-setup/terminals/terminator.html).

@@ -106,8 +106,9 @@ WORKDIR /catkin_ws
 RUN apt-get install -y python3-catkin-tools
 WORKDIR /catkin_ws
 RUN bash -c "source /opt/ros/noetic/setup.bash && catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release -DFranka_DIR=/src/libfranka/build && catkin build"
- 
+
 # Clone the spacenavd repository
+WORKDIR /catkin_ws/src
 RUN git clone https://github.com/FreeSpacenav/spacenavd.git /spacenavd
 
 # Set the working directory
@@ -123,6 +124,10 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y ros-noetic-realsense2-camera
 
 RUN pip install --no-cache-dir pynput numpy-quaternion
+
+RUN pip install --no-cache-dir "pyspacemouse==1.1.4"
+
+RUN apt install -y libhidapi-dev #
 
 COPY /franka_python /catkin_ws/python_franka
 # Source workspace on container startup
