@@ -29,7 +29,7 @@ export DRY_RUN=${DRY_RUN:-0}
 # Ctrl+C stops an auto command and leaves you at the container prompt.
 PANES=(
   "robot | spacemouse      | auto | spacenavd -v -d & roslaunch spacenav_node classic.launch"
-  "robot | cameras         | auto | roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=336222073305 serial_no_camera2:=825312073923"
+  "robot | cameras         | auto | roslaunch realsense2_camera rs_multiple_devices.launch serial_no_camera1:=336222073305 serial_no_camera2:=317222075615"
   "robot | spacemouse test | up   | rostopic echo /spacenav/joy"
   "robot | spare           | up   | "
   "cdp   | camera images   | up   | conda run -n conda-env-CLIC --no-capture-output python env/realsense_Image_receiver.py"
